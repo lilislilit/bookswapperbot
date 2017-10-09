@@ -1,23 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-# Simple Bot to reply to Telegram messages
+# Bot which facilitates book exchange in chats
 # This program is dedicated to the public domain under the CC0 license.
-"""
-This Bot uses the Updater class to handle the bot.
 
-First, a few handler functions are defined. Then, those functions are passed to
-the Dispatcher and registered at their respective places.
-Then, the bot is started and runs until we press Ctrl-C on the command line.
-
-Usage:
-Basic Echobot example, repeats messages.
-Press Ctrl-C on the command line or send a signal to the process to stop the
-bot.
-"""
-
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 import logging
+import strings
+from book import Book
+from telegram.ext import Updater, CommandHandler, Filters
+from telegram import ParseMode
 
 # Enable logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -25,50 +16,50 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 
 logger = logging.getLogger(__name__)
 
-book_list = ['Book1','Book2'] #TODO persistance
+book_list = []  # TODO persistance
 
-# Define a few command handlers. These usually take the two arguments bot and
-# update. Error handlers also receive the raised TelegramError object in error.
+
 def start(bot, update):
-    update.message.reply_text('Привет! С помощью этого чата можно организовывать обмен книгами в вашем чате')
+    update.message.reply_text(
+        strings.START_TEXT)
 
 
 def help(bot, update):
-    update.message.reply_text('Добавить книгу поможно с помощью команды /addbook, просмотреть список доступных с помощью команды /list')
+    update.message.reply_text(
+        strings.HELP_TEXT)
 
 
 def addbook(bot, update, args):
-	book_list.append(''.join(args))
+    book = Book(name=' '.join(args), owner=update.message.from_user)
+    book.labels = ["Algo", "Design"]
+    book.description = "Sample Description Sample Description Sample Description Sample Description Sample Description"
+    book_list.append(book)
+
 
 def booklist(bot, update):
-	bot.send_message(chat_id=update.message.chat_id, text='\n'.join(book_list))
+    book_list_str = '\n'.join(map(str, book_list))
+    logger.info(book_list_str)
+    bot.send_message(chat_id=update.message.chat_id, text=book_list_str, parse_mode=ParseMode.HTML)
 
 def error(bot, update, error):
     logger.warn('Update "%s" caused error "%s"' % (update, error))
 
 
 def main():
-    # Create the EventHandler and pass it your bot's token.
-    updater = Updater("TOKEN")
+    updater = Updater("")
 
-    # Get the dispatcher to register handlers
     dp = updater.dispatcher
 
-    # on different commands - answer in Telegram
     dp.add_handler(CommandHandler("start", start))
     dp.add_handler(CommandHandler("help", help))
-    dp.add_handler(CommandHandler("addbook", addbook,  pass_args=True)) # TODO implement conversation handlers
-    dp.add_handler(CommandHandler("list", booklist)) 
+    # TODO implement conversation handlers
+    dp.add_handler(CommandHandler("addbook", addbook, pass_args=True))
+    dp.add_handler(CommandHandler("list", booklist))
 
-    # log all errors
     dp.add_error_handler(error)
 
-    # Start the Bot
     updater.start_polling()
 
-    # Run the bot until you press Ctrl-C or the process receives SIGINT,
-    # SIGTERM or SIGABRT. This should be used most of the time, since
-    # start_polling() is non-blocking and will stop the bot gracefully.
     updater.idle()
 
 
