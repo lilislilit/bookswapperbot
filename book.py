@@ -1,3 +1,10 @@
+from enum import Enum
+
+class GiveMode(Enum):
+    RENT = 1
+    SWAP = 2
+    GIVEAWAY = 3
+
 class Book(object):
     def __init__(self, name, owner):
         self._name = name
@@ -20,6 +27,22 @@ class Book(object):
     @description.setter
     def description(self, value):
         self._description = value
+    
+    @property
+    def author(self):
+        return self._author
+
+    @author.setter
+    def author(self, value):
+        self._author = value
+
+    @property
+    def give_mode(self):
+        return self._give_mode
+
+    @give_mode.setter
+    def give_mode(self, value):
+        self._give_mode = value
     
     @property
     def current_owner(self):
