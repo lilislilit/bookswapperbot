@@ -61,5 +61,5 @@ class Book(object):
         self._labels = value
     
     def __str__(self):
-        labels_formated = ''.join([f"#{label}" for label in self._labels])
+        labels_formated = ''.join([f"<a href='#{label}'>#{label}</a> " for label in self._labels])
         return f"<b>{self.name}</b>  \n {self._description} \n {labels_formated}"+f"\nВладелец: @{self.current_owner.username}"

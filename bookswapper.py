@@ -9,6 +9,7 @@ import strings
 from book import Book
 from addcommandhandler import AddCommandHandler
 from book_db import BookRepository
+from booklistview import ListView
 from telegram.ext import Updater, CommandHandler, Filters
 from telegram import ParseMode
 
@@ -17,21 +18,27 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
                     level=logging.INFO)
 
 logger = logging.getLogger(__name__)
-  # TODO persistance
+# TODO persistance
 repo = BookRepository()
+
 
 def start(bot, update):
     update.message.reply_text(
         strings.START_TEXT)
 
+
 def help(bot, update):
     update.message.reply_text(
         strings.HELP_TEXT)
 
+
 def booklist(bot, update):
-    book_list_str = '\n'.join(map(str, repo.get_all()))
-    logger.info(book_list_str)
-    bot.send_message(chat_id=update.message.chat_id, text=book_list_str, parse_mode=ParseMode.HTML)
+    book_list_view = ListView(repo.get_all())
+    logger.info(str(book_list_view))
+    bot.send_message(chat_id=update.message.chat_id,
+                     text=str(book_list_view),
+                     parse_mode=ParseMode.HTML,
+                     reply_markup=book_list_view.keyboard)
 
 def error(bot, update, error):
     logger.warn('Update "%s" caused error "%s"' % (update, error))
